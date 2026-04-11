@@ -9,9 +9,10 @@ echo "🚀 Starting deployment..."
 cd $APP_DIR
 
 echo "📥 Pulling latest code..."
-git pull origin main
+git stash && git pull origin main
 
 echo "📦 Installing dependencies..."
+npm install
 cd app
 npm install
 
@@ -19,7 +20,7 @@ echo "🔁 Restarting application..."
 
 # Check if app exists in PM2
 if pm2 describe thinkvalley > /dev/null; then
-    pm2 restart thinkvalley
+    pm2 reload thinkvalley --update-env
 else
     echo "⚠️ App not found in PM2, starting new..."
     pm2 start ecosystem.config.js
