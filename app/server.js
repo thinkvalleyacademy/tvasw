@@ -1,14 +1,22 @@
 require('dotenv').config();
+
 const express = require('express');
-const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 
-const app = express();
+const app = express(); // ✅ define FIRST
 
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Serve frontend (CORRECT PATH)
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // Storage path
 const DATA_DIR = process.env.DATA_DIR || './data';
@@ -25,6 +33,10 @@ if (!fs.existsSync(DATA_FILE)) {
 // Save query
 app.post('/send', (req, res) => {
   const { name, email, message } = req.body;
+
+  if (!name || !email || !message) {
+    return res.status(400).send('Missing fields');
+  }
 
   const newEntry = {
     name,
@@ -44,13 +56,7 @@ app.post('/send', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 4080;
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-// View queries in browser
+// Admin route
 app.get('/admin', (req, res) => {
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE));
@@ -58,4 +64,11 @@ app.get('/admin', (req, res) => {
   } catch (err) {
     res.status(500).send('Error reading queries');
   }
+});
+
+// Start server
+const PORT = process.env.PORT || 4080;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });

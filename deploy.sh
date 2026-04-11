@@ -1,13 +1,34 @@
 #!/bin/bash
 
-echo "Pulling latest code..."
-git pull
+set -e  # stop on error
 
-echo "Installing dependencies..."
+APP_DIR="/home/tvaprod02/tvasw"
+
+echo "🚀 Starting deployment..."
+
+cd $APP_DIR
+
+echo "📥 Pulling latest code..."
+git pull origin main
+
+echo "📦 Installing dependencies..."
 cd app
 npm install
 
-echo "Restarting app..."
-pm2 restart thinkvalley
+echo "🔁 Restarting application..."
 
-echo "Deployment complete!"
+# Check if app exists in PM2
+if pm2 describe thinkvalley > /dev/null; then
+    pm2 restart thinkvalley
+else
+    echo "⚠️ App not found in PM2, starting new..."
+    pm2 start app/server.js --name thinkvalley
+fi
+
+echo "💾 Saving PM2 process..."
+pm2 save
+
+echo "🧹 Cleaning logs (optional)..."
+pm2 flush thinkvalley
+
+echo "✅ Deployment completed successfully!"
