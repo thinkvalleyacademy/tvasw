@@ -22,7 +22,7 @@ if pm2 describe thinkvalley > /dev/null; then
     pm2 restart thinkvalley
 else
     echo "⚠️ App not found in PM2, starting new..."
-    pm2 start app/server.js --name thinkvalley
+    pm2 start ecosystem.config.js
 fi
 
 echo "💾 Saving PM2 process..."
