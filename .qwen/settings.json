@@ -4,7 +4,9 @@
       "Bash(pm2 *)",
       "Bash(./deploy.sh)",
       "Bash(curl *)",
-      "Bash(sleep *)"
+      "Bash(sleep *)",
+      "Bash(file *)",
+      "Bash(cp *)"
     ]
   },
   "$version": 3
