@@ -9,9 +9,6 @@ LOG "🚀 Starting deployment..."
 
 cd $APP_DIR
 
-LOG "📥 Discarding local changes and pulling latest code..."
-git checkout -- . && git pull origin main
-
 LOG "📦 Installing root dependencies..."
 npm install
 
