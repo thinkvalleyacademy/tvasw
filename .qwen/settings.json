@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pm2 *)",
+      "Bash(./deploy.sh)",
+      "Bash(curl *)",
+      "Bash(sleep *)"
+    ]
+  },
+  "$version": 3
+}
