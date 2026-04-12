@@ -55,8 +55,17 @@ app.post('/send', (req, res) => {
   }
 });
 
-// Admin route
+// Admin route - serve page
 app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
+// Admin API - password protected
+app.get('/admin/api', (req, res) => {
+  const { password } = req.query;
+  if (password !== 'tva808#') {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE));
     res.json(data);

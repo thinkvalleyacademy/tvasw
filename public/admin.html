@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Thinkvalley</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --navy: #0b1a30;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --blue-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --orange: #ea580c;
+      --orange-light: #fff7ed;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --white: #ffffff;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+    }
+
+    /* Topbar */
+    .topbar {
+      background: var(--navy);
+      color: var(--white);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-md);
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .topbar-brand img {
+      height: 32px;
+      width: auto;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar a, .topbar button {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+    }
+
+    .topbar a:hover, .topbar button:hover {
+      color: var(--white);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .btn-refresh {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-refresh svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Main */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-card .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      font-weight: 500;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--gray-800);
+      background: var(--white);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .sort-btn {
+      padding: 10px 16px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      background: var(--white);
+      color: var(--gray-600);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .sort-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .sort-btn.active {
+      background: var(--blue);
+      color: var(--white);
+      border-color: var(--blue);
+    }
+
+    /* Table */
+    .table-wrapper {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    thead {
+      background: var(--gray-50);
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    th {
+      text-align: left;
+      padding: 14px 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s;
+    }
+
+    th:hover {
+      color: var(--blue);
+    }
+
+    th .sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      opacity: 0.3;
+      font-size: 0.7rem;
+    }
+
+    th.sorted .sort-icon {
+      opacity: 1;
+      color: var(--blue);
+    }
+
+    td {
+      padding: 16px 20px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover {
+      background: var(--gray-50);
+    }
+
+    .td-name {
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .td-email {
+      color: var(--blue);
+    }
+
+    .td-message {
+      color: var(--gray-600);
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .td-message.expanded {
+      white-space: normal;
+    }
+
+    .td-time {
+      white-space: nowrap;
+      color: var(--gray-500);
+      font-size: 0.85rem;
+    }
+
+    .td-index {
+      color: var(--gray-400);
+      font-size: 0.8rem;
+      font-weight: 500;
+      min-width: 40px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--gray-400);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 1.1rem;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 80px 24px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--gray-900);
+      color: var(--white);
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Login */
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--gray-50);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .login-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .login-brand img {
+      height: 40px;
+      width: auto;
+    }
+
+    .login-brand h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .login-desc {
+      font-size: 0.9rem;
+      color: var(--gray-500);
+      margin-bottom: 28px;
+    }
+
+    .login-form {
+      text-align: left;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--gray-800);
+      background: var(--white);
+      transition: all 0.2s;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .login-input::placeholder {
+      color: var(--gray-400);
+    }
+
+    .login-form .form-group {
+      margin-bottom: 18px;
+    }
+
+    .login-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+
+    .login-error {
+      color: var(--red);
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 12px;
+      min-height: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: var(--radius);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      min-height: 44px;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-hover);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .main {
+        padding: 20px 16px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-card {
+        padding: 18px;
+      }
+
+      .stat-card .stat-value {
+        font-size: 1.5rem;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input {
+        min-width: unset;
+      }
+
+      .sort-btn {
+        text-align: center;
+      }
+
+      th, td {
+        padding: 12px 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-brand span {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="/tvs_logo.png" alt="Thinkvalley">
+      <span>Admin Dashboard</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-refresh" onclick="handleRefresh()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
+      <a href="/">← Website</a>
+    </div>
+  </div>
+
+  <div class="main" id="dashboardContent" style="display:none;">
+    <div class="stats" id="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalQueries">—</div>
+        <div class="stat-label">Total Inquiries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="todayQueries">—</div>
+        <div class="stat-label">Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="weekQueries">—</div>
+        <div class="stat-label">This Week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="uniqueEmails">—</div>
+        <div class="stat-label">Unique Contacts</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, email, or message...">
+      <button class="sort-btn active" id="sortNewest" onclick="sortBy('newest')">
+        Newest First
+      </button>
+      <button class="sort-btn" id="sortOldest" onclick="sortBy('oldest')">
+        Oldest First
+      </button>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Message</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tableState"></div>
+  </div>
+
+  <!-- Login Screen -->
+  <div class="login-wrapper" id="loginScreen">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="/tvs_logo.png" alt="Thinkvalley">
+        <h2>Admin Dashboard</h2>
+      </div>
+      <p class="login-desc">Enter the password to view inquiries.</p>
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="passwordInput">Password</label>
+          <input type="password" id="passwordInput" class="login-input" placeholder="Enter admin password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader" style="display:none;">Verifying...</span>
+        </button>
+        <p id="loginError" class="login-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let allData = [];
+    let filteredData = [];
+    let currentSort = 'newest';
+    let adminPassword = '';
+
+    function handleRefresh() {
+      if (!adminPassword) {
+        window.location.href = '/admin';
+        return;
+      }
+      loadData();
+    }
+
+    // Login form
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const input = document.getElementById('passwordInput');
+      const btn = document.getElementById('loginBtn');
+      const btnText = btn.querySelector('.btn-text');
+      const btnLoader = btn.querySelector('.btn-loader');
+      const errorEl = document.getElementById('loginError');
+
+      btn.disabled = true;
+      btnText.style.display = 'none';
+      btnLoader.style.display = 'inline';
+      errorEl.textContent = '';
+
+      adminPassword = input.value;
+
+      try {
+        const res = await fetch(`/admin/api?password=${encodeURIComponent(adminPassword)}`);
+        if (!res.ok) {
+          throw new Error('Incorrect password');
+        }
+        allData = await res.json();
+        // Show dashboard, hide login
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+        filteredData = [...allData];
+        applySort();
+        renderTable();
+        updateStats();
+        showToast(`${allData.length} inquiry(s) loaded`);
+      } catch (err) {
+        errorEl.textContent = 'Incorrect password. Please try again.';
+        input.value = '';
+        input.focus();
+      } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+      }
+    });
+
+    async function loadData() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '<tr><td colspan="5"><div class="loading"><div class="spinner"></div><p>Loading inquiries...</p></div></td></tr>';
+
+      try {
+        const res = await fetch(`/admin/api?password=${encodeURIComponent(adminPassword)}`);
+        if (!res.ok) {
+          throw new Error('Unauthorized');
+        }
+        allData = await res.json();
+        filteredData = [...allData];
+        applySort();
+        renderTable();
+        updateStats();
+        showToast(`${allData.length} inquiry(s) loaded`);
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><h3>Error loading data</h3><p>Please try again.</p></div></td></tr>';
+        showToast('Failed to load data', true);
+      }
+    }
+
+    function updateStats() {
+      const today = new Date().toDateString();
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      const todayCount = allData.filter(d => new Date(d.timestamp).toDateString() === today).length;
+      const weekCount = allData.filter(d => new Date(d.timestamp) >= weekAgo).length;
+      const uniqueEmails = new Set(allData.map(d => d.email.toLowerCase())).size;
+
+      document.getElementById('totalQueries').textContent = allData.length;
+      document.getElementById('todayQueries').textContent = todayCount;
+      document.getElementById('weekQueries').textContent = weekCount;
+      document.getElementById('uniqueEmails').textContent = uniqueEmails;
+    }
+
+    function sortBy(type) {
+      currentSort = type;
+      document.getElementById('sortNewest').classList.toggle('active', type === 'newest');
+      document.getElementById('sortOldest').classList.toggle('active', type === 'oldest');
+      applySort();
+      renderTable();
+    }
+
+    function applySort() {
+      filteredData.sort((a, b) => {
+        const dateA = new Date(a.timestamp);
+        const dateB = new Date(b.timestamp);
+        return currentSort === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+
+      if (filteredData.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="5">
+            <div class="empty-state">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <h3>No inquiries found</h3>
+              <p>Try adjusting your search filter.</p>
+            </div>
+          </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredData.map((item, i) => {
+        const date = new Date(item.timestamp);
+        const formatted = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        const time = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        return `
+          <tr>
+            <td class="td-index">${i + 1}</td>
+            <td class="td-name">${escapeHtml(item.name)}</td>
+            <td class="td-email">${escapeHtml(item.email)}</td>
+            <td class="td-message" title="Click to expand" onclick="this.classList.toggle('expanded')">${escapeHtml(item.message)}</td>
+            <td class="td-time">${formatted}<br>${time}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function showToast(msg, isError) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.background = isError ? 'var(--red)' : 'var(--gray-900)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query) {
+        filteredData = [...allData];
+      } else {
+        filteredData = allData.filter(item =>
+          item.name.toLowerCase().includes(query) ||
+          item.email.toLowerCase().includes(query) ||
+          item.message.toLowerCase().includes(query)
+        );
+      }
+      applySort();
+      renderTable();
+    });
+
+    // Init - check URL for password
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pass = urlParams.get('pass');
+      if (pass) {
+        document.getElementById('passwordInput').value = pass;
+      }
+    });
+  </script>
+
+</body>
+</html>
