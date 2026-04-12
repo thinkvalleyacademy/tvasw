@@ -1,70 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thinkvalley Softwares</title>
-
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thinkvalley Softwares — Build Powerful Software for Your Business</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="header">
-  <h2>Thinkvalley</h2>
-  <nav>
-    <a href="#services">Services</a>
-    <a href="#clients">Clients</a>
-    <a href="#contact">Contact</a>
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">◆</span> Thinkvalley
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="#services">Services</a>
+        <a href="#process">Process</a>
+        <a href="#clients">Clients</a>
+        <a href="#contact" class="nav-cta">Get Started</a>
+      </div>
+    </div>
   </nav>
-</header>
 
-<section class="hero">
-  <h1>Build Powerful Software for Your Business</h1>
-  <p>We develop scalable, secure and modern solutions tailored to your needs.</p>
-  <a href="#contact" class="btn">Get Your Software Built</a>
-</section>
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-badge">Trusted Software Partner Since 2018</span>
+        <h1>Unleash the Power of <span class="gradient-text">Custom Software</span></h1>
+        <p>We design, build and scale modern digital solutions that drive growth, streamline operations, and delight your customers.</p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-primary">Get Your Software Built</a>
+          <a href="#services" class="btn btn-outline">Explore Services</a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">50+</span>
+          <span class="stat-label">Projects Delivered</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">15+</span>
+          <span class="stat-label">Enterprise Clients</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">99.9%</span>
+          <span class="stat-label">Uptime Record</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section id="services">
-  <h2>Our Services</h2>
-  <div class="services">
-    <div class="card">💻<h3>Custom Software</h3><p>End-to-end business solutions</p></div>
-    <div class="card">🌐<h3>Web Apps</h3><p>Modern responsive platforms</p></div>
-    <div class="card">⚙️<h3>Backend Systems</h3><p>Secure APIs & microservices</p></div>
-    <div class="card">☁️<h3>Cloud & DevOps</h3><p>Docker, CI/CD, deployments</p></div>
-  </div>
-</section>
+  <!-- Services -->
+  <section id="services" class="section section-light">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">What We Do</span>
+        <h2>Services Built for Scale</h2>
+        <p>From concept to deployment — full-stack solutions engineered for performance, security, and growth.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Custom Software</h3>
+          <p>End-to-end business solutions tailored to your workflows, from requirement gathering to deployment and support.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <h3>Web Applications</h3>
+          <p>Modern, responsive web platforms built with React, Angular, or Vue — fast, accessible, and beautiful on every device.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Backend & APIs</h3>
+          <p>Secure, high-performance APIs and microservices powered by Spring Boot, Node.js, and modern architecture patterns.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Cloud & DevOps</h3>
+          <p>Docker, Kubernetes, CI/CD pipelines, and cloud-native deployments on AWS, GCP, or Azure — automated and reliable.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section id="clients">
-  <h2>Trusted By</h2>
-  <div class="clients">
-    <div class="client">District Bar Association, Allahabad</div>
-    <div class="client">Mothers Goose School</div>
-  </div>
-</section>
+  <!-- Process -->
+  <section id="process" class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">How We Work</span>
+        <h2>Our Proven Process</h2>
+        <p>A structured approach that minimizes risk and maximizes delivery speed — from idea to production in weeks, not months.</p>
+      </div>
+      <div class="process-grid">
+        <div class="process-step">
+          <span class="step-number">01</span>
+          <h3>Discovery</h3>
+          <p>We listen, understand your goals, map requirements, and define a clear project scope with milestones.</p>
+        </div>
+        <div class="process-step">
+          <span class="step-number">02</span>
+          <h3>Design</h3>
+          <p>Wireframes, prototypes, and architecture diagrams — you see the blueprint before a single line of code is written.</p>
+        </div>
+        <div class="process-step">
+          <span class="step-number">03</span>
+          <h3>Develop</h3>
+          <p>Agile sprints with weekly demos, transparent progress tracking, and continuous integration for rapid feedback loops.</p>
+        </div>
+        <div class="process-step">
+          <span class="step-number">04</span>
+          <h3>Deploy & Support</h3>
+          <p>Production-ready launch with monitoring, SLAs, and ongoing maintenance to keep your software running flawlessly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section class="tech">
-  <h2>Technologies We Use</h2>
-  <p>Java | Spring Boot | Docker | MySQL | React | Linux | Cloud</p>
-</section>
+  <!-- Clients -->
+  <section id="clients" class="section section-light">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Trusted By</span>
+        <h2>Organizations That Trust Us</h2>
+        <p>From government bodies to education leaders — our solutions power real-world operations every day.</p>
+      </div>
+      <div class="clients-grid">
+        <div class="client-card">
+          <div class="client-logo">⚖️</div>
+          <h4>District Bar Association</h4>
+          <p>Allahabad — Case management and digitization platform</p>
+        </div>
+        <div class="client-card">
+          <div class="client-logo">🎓</div>
+          <h4>Mothers Goose School</h4>
+          <p>Student management & parent communication portal</p>
+        </div>
+        <div class="client-card">
+          <div class="client-logo">🏢</div>
+          <h4>Enterprise Clients</h4>
+          <p>Custom ERP, inventory, and analytics solutions</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section id="contact" class="contact">
-  <h2>Tell Us Your Requirement</h2>
+  <!-- Technologies -->
+  <section class="section section-accent">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Tech Stack</span>
+        <h2>Technologies We Master</h2>
+      </div>
+      <div class="tech-tags">
+        <span class="tech-tag">Java</span>
+        <span class="tech-tag">Spring Boot</span>
+        <span class="tech-tag">React</span>
+        <span class="tech-tag">Node.js</span>
+        <span class="tech-tag">Docker</span>
+        <span class="tech-tag">Kubernetes</span>
+        <span class="tech-tag">MySQL</span>
+        <span class="tech-tag">PostgreSQL</span>
+        <span class="tech-tag">AWS</span>
+        <span class="tech-tag">GCP</span>
+        <span class="tech-tag">Linux</span>
+        <span class="tech-tag">CI/CD</span>
+        <span class="tech-tag">Redis</span>
+        <span class="tech-tag">MongoDB</span>
+      </div>
+    </div>
+  </section>
 
-  <form id="contactForm">
-    <input type="text" name="name" placeholder="Your Name" required>
-    <input type="email" name="email" placeholder="Your Email" required>
-    <textarea name="message" placeholder="Describe your requirement" required></textarea>
-    <button type="submit">Submit</button>
-  </form>
+  <!-- Contact -->
+  <section id="contact" class="section section-contact">
+    <div class="container">
+      <div class="contact-layout">
+        <div class="contact-info">
+          <span class="section-tag">Get In Touch</span>
+          <h2>Let's Build Something Great</h2>
+          <p>Tell us about your project and we'll get back to you within 24 hours with a free consultation and project estimate.</p>
+          <ul class="contact-details">
+            <li>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2"/></svg>
+              <span>thinkvalleyacademy@gmail.com</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contact-form-wrapper">
+          <form id="contactForm" class="contact-form">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="john@company.com" required>
+            </div>
+            <div class="form-group">
+              <label for="message">Your Requirements</label>
+              <textarea id="message" name="message" rows="5" placeholder="Describe your project, timeline, and any specific technologies..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+              <span class="btn-text">Send Message</span>
+              <span class="btn-loader" style="display:none;">Submitting...</span>
+            </button>
+          </form>
+          <p id="statusMessage" class="status-message"></p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <p id="statusMessage"></p>
-</section>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-icon">◆</span> Thinkvalley
+          <p>Building software that matters.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#services">Services</a>
+          <a href="#process">Process</a>
+          <a href="#clients">Clients</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Thinkvalley Softwares. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 
-<footer>
-  <p>© 2026 Thinkvalley Softwares</p>
-  <p>thinkvalleyacademy@gmail.com</p>
-</footer>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
