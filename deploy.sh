@@ -3,33 +3,36 @@
 set -e  # stop on error
 
 APP_DIR="/home/tvaprod02/tvasw"
+LOG() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"; }
 
-echo "🚀 Starting deployment..."
+LOG "🚀 Starting deployment..."
 
 cd $APP_DIR
 
-echo "📥 Pulling latest code..."
-git stash && git pull origin main
+LOG "📥 Discarding local changes and pulling latest code..."
+git checkout -- . && git pull origin main
 
-echo "📦 Installing dependencies..."
+LOG "📦 Installing root dependencies..."
 npm install
+
+LOG "📦 Installing app dependencies..."
 cd app
 npm install
 
-echo "🔁 Restarting application..."
+LOG "🔁 Restarting application..."
 
 # Check if app exists in PM2
 if pm2 describe thinkvalley > /dev/null; then
     pm2 reload thinkvalley --update-env
 else
-    echo "⚠️ App not found in PM2, starting new..."
+    LOG "⚠️ App not found in PM2, starting new..."
     pm2 start ecosystem.config.js
 fi
 
-echo "💾 Saving PM2 process..."
+LOG "💾 Saving PM2 process..."
 pm2 save
 
-echo "🧹 Cleaning logs (optional)..."
+LOG "🧹 Cleaning logs..."
 pm2 flush thinkvalley
 
-echo "✅ Deployment completed successfully!"
+LOG "✅ Deployment completed successfully!"
