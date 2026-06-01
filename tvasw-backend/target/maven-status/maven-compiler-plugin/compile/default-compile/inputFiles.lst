@@ -1,0 +1,13 @@
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/BackendApplication.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/config/SecurityConfig.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/controller/AiController.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/dto/AiMessageRequest.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/dto/AiMessageResponse.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/dto/CreateProjectRequest.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/dto/DraftResponse.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/dto/StartAiRequest.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/dto/StartAiResponse.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/model/Project.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/repository/ProjectRepository.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/service/AiService.java
+/Users/mukeshkumar/Desktop/TVA-application-devlopment/TVA-SW/tvasw-backend/src/main/java/com/tvasw/backend/service/GeminiClient.java

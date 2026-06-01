@@ -1,0 +1,13 @@
+com/tvasw/backend/dto/AiMessageResponse.class
+com/tvasw/backend/dto/DraftResponse.class
+com/tvasw/backend/dto/CreateProjectRequest.class
+com/tvasw/backend/controller/AiController.class
+com/tvasw/backend/BackendApplication.class
+com/tvasw/backend/dto/StartAiResponse.class
+com/tvasw/backend/service/GeminiClient.class
+com/tvasw/backend/dto/StartAiRequest.class
+com/tvasw/backend/repository/ProjectRepository.class
+com/tvasw/backend/model/Project.class
+com/tvasw/backend/dto/AiMessageRequest.class
+com/tvasw/backend/service/AiService.class
+com/tvasw/backend/config/SecurityConfig.class

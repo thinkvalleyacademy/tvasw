@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Started — Thinkvalley</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">Thinkvalley</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#services">Services</a>
+        <a href="index.html#clients">Clients</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="section section-light">
+    <div class="container" style="max-width:900px;margin:48px auto;">
+      <div class="section-header">
+        <span class="section-tag">Get Started</span>
+        <h2>Tell us about your project</h2>
+        <p>Fill this short form so we can match the right team and provide an initial estimate.</p>
+      </div>
+
+      <form id="getStartedForm" class="contact-form">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" placeholder="Jane Doe" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@company.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="requirementType">Type of Requirement</label>
+          <select id="requirementType" name="requirementType" required>
+            <option value="">Select type</option>
+            <option>New Project</option>
+            <option>Feature Request</option>
+            <option>Bug Fix / Support</option>
+            <option>Consultation</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="summary">Project Summary / More Details</label>
+          <textarea id="summary" name="summary" rows="6" placeholder="Describe the problem, goals, and success criteria..." required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:1;min-width:180px;margin-right:12px;">
+            <label for="timeline">Estimated Timeline</label>
+            <select id="timeline" name="timeline">
+              <option value="">Select timeline</option>
+              <option>ASAP / Within 2 weeks</option>
+              <option>1-2 months</option>
+              <option>3-6 months</option>
+              <option>6+ months</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex:1;min-width:180px;">
+            <label for="budget">Estimated Budget</label>
+            <select id="budget" name="budget">
+              <option value="">Select budget</option>
+              <option>Under $5k</option>
+              <option>$5k - $20k</option>
+              <option>$20k - $100k</option>
+              <option>$100k+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tech">Preferred Technologies (optional)</label>
+          <input type="text" id="tech" name="tech" placeholder="React, Java, Node.js, PostgreSQL">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="getStartedSubmit">
+          <span class="btn-text">Submit Requirements</span>
+          <span class="btn-loader" style="display:none;">Submitting...</span>
+        </button>
+      </form>
+
+      <section class="assistant-section">
+        <div class="assistant-panel hidden" id="assistantPanel">
+          <div class="assistant-header">
+            <div>
+              <h3>AI Requirement Assistant</h3>
+              <p>Our assistant will help you refine your summary, ask clarification questions, and generate a polished requirements draft.</p>
+            </div>
+          </div>
+
+          <div id="assistantMessages" class="assistant-messages"></div>
+
+          <div class="assistant-actions">
+            <button type="button" class="btn btn-outline" id="generateDraftBtn">Generate Draft</button>
+          </div>
+
+          <div class="assistant-input-row">
+            <input type="text" id="assistantInput" placeholder="Ask the AI assistant a clarifying question..." autocomplete="off">
+            <button type="button" class="btn btn-primary" id="assistantSend">Send</button>
+          </div>
+
+          <div class="assistant-draft hidden" id="assistantDraft">
+            <h4>Suggested Requirement Draft</h4>
+            <pre id="draftOutput"></pre>
+          </div>
+        </div>
+
+        <p id="assistantStatus" class="status-message"></p>
+      </section>
+
+      <p id="getStartedStatus" class="status-message"></p>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
