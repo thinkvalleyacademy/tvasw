@@ -64,6 +64,8 @@ app.use('/api', (req, res) => {
   req.pipe(proxyReq);
 });
 
+app.disable('x-powered-by');
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -94,6 +96,9 @@ app.post('/send', rateLimit(5, 10 * 60 * 1000), (req, res) => {
 
   if (!name || !email || !message) {
     return res.status(400).send('Missing fields');
+  }
+  if (![name, email, message].every(v => typeof v === 'string') || name.length > 200 || email.length > 255 || message.length > 5000) {
+    return res.status(400).send('Invalid or too long fields');
   }
 
   const newEntry = {

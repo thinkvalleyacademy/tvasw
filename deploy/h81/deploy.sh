@@ -3,7 +3,6 @@
 set -euo pipefail
 
 SERVER="${SERVER:-tva-pd@100.114.88.64}"
-BIND_IP="${SERVER#*@}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 (cd "$ROOT/tvasw-backend" && mvn -q -B clean package > /tmp/tvasw-build.log 2>&1 || { tail -40 /tmp/tvasw-build.log; exit 1; })
@@ -12,9 +11,10 @@ ssh "$SERVER" 'mkdir -p ~/apps/tvasw/{frontend/app,data,client_queries} ~/.confi
 scp -q "$ROOT/tvasw-backend/target/backend-0.0.1-SNAPSHOT.jar" "$SERVER:apps/tvasw/backend.jar.new"
 scp -q "$ROOT"/tvasw-frontend/app/{server.js,package.json,package-lock.json} "$SERVER:apps/tvasw/frontend/app/"
 scp -qr "$ROOT/tvasw-frontend/public" "$SERVER:apps/tvasw/frontend/"
-scp -q "$ROOT"/deploy/h81/*.service "$SERVER:.config/systemd/user/"
+scp -q "$ROOT"/deploy/h81/*.service "$ROOT"/deploy/h81/*.timer "$SERVER:.config/systemd/user/"
+scp -q "$ROOT/deploy/h81/backup.sh" "$SERVER:apps/tvasw/"
 
-ssh "$SERVER" BIND_IP="$BIND_IP" bash -s <<'REMOTE'
+ssh "$SERVER" bash -s <<'REMOTE'
 set -euo pipefail
 umask 077
 cd ~/apps/tvasw
@@ -34,7 +34,8 @@ fi
 if [ ! -f frontend.env ]; then
   cat > frontend.env <<EOF
 NODE_ENV=production
-HOST=$BIND_IP
+HOST=127.0.0.1
+TRUST_PROXY=loopback
 PORT=4080
 BACKEND_PORT=8080
 DATA_DIR=$HOME/apps/tvasw/client_queries
@@ -53,12 +54,18 @@ if ! grep -q '^TVASW_APP_ADMINTOKEN=' backend.env || ! grep -q '^ADMIN_API_TOKEN
   done
 fi
 
+# Version script and style links, so browsers don't keep old copies after a deploy
+VERSION=$(cat frontend/public/*.js frontend/public/*.css | sha256sum | cut -c1-10)
+sed -i -E "s#(src|href)=\"(/?[a-z]+\.(js|css))\"#\1=\"\2?v=$VERSION\"#g" frontend/public/*.html
+
 (cd frontend/app && npm ci --omit=dev --silent)
 mv backend.jar.new backend.jar
 systemctl --user daemon-reload
 systemctl --user enable -q tvasw-backend tvasw-frontend
+systemctl --user enable -q --now tvasw-backup.timer
 systemctl --user restart tvasw-backend tvasw-frontend
 
+BIND_IP=$(sed -n 's/^HOST=//p' frontend.env)
 for i in $(seq 60); do
   code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://$BIND_IP:4080/" || true)
   api=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/ai/none || true)

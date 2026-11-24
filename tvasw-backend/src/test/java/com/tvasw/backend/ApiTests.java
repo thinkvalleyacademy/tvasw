@@ -135,6 +135,26 @@ class ApiTests {
     }
 
     @Test
+    void interviewFinishes() throws Exception {
+        when(gemini.generateJson(anyString(), anyMap())).thenReturn("{\"message\":\"More?\",\"options\":[\"A\"],\"progress\":95}");
+        when(gemini.generate(anyString())).thenReturn("doc");
+        String token = register("finish@example.com");
+        String url = "/api/ai/projects/" + project(token);
+        assertEquals("GATHERING", tree(send(get(url), token, null)).at("/project/stage").asText());
+        assertEquals("READY", tree(send(post(url + "/start"), token, null)).at("/project/stage").asText());
+
+        JsonNode r = tree(send(post(url + "/messages"), token, Map.of("message", "x")));
+        assertEquals(100, r.at("/project/progress").asInt());
+        assertEquals(0, r.at("/messages/2/options").size());
+        ArgumentCaptor<String> prompt = ArgumentCaptor.forClass(String.class);
+        verify(gemini, atLeastOnce()).generateJson(prompt.capture(), anyMap());
+        assertTrue(prompt.getValue().contains("FINISHED"));
+
+        assertEquals("DOCUMENT_READY", tree(send(post(url + "/draft"), token, null)).at("/project/stage").asText());
+        assertEquals("DOCUMENT_OUTDATED", tree(send(post(url + "/messages"), token, Map.of("message", "y"))).at("/project/stage").asText());
+    }
+
+    @Test
     void plainTextReplyStillWorks() throws Exception {
         when(gemini.generateJson(anyString(), anyMap())).thenReturn("not json");
         String token = register("plain@example.com");

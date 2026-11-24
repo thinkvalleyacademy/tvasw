@@ -1,0 +1,12 @@
+[Unit]
+Description=TVA-SW Cloudflare tunnel
+After=tvasw-frontend.service
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/usr/bin/cloudflared --no-autoupdate --config %h/.cloudflared/tvasw.yml tunnel run
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -2,7 +2,10 @@
 
 const $ = (id) => document.getElementById(id);
 const STATUS_LABELS = {
-  CREATED: 'In progress',
+  GATHERING: 'Gathering requirements',
+  READY: 'Ready for document',
+  DOCUMENT_READY: 'Document ready',
+  DOCUMENT_OUTDATED: 'Document needs update',
   SUBMITTED: 'Sent to Thinkvalley',
   IN_REVIEW: 'In review',
   QUOTED: 'Quoted',
@@ -90,7 +93,7 @@ async function showProjects(view) {
     $('projectList').innerHTML = projects.map(p => `
       <a class="project-card" href="#project-${p.id}">
         <span><strong>${escapeHtml(p.name)}</strong><small>${new Date(p.createdAt).toLocaleDateString()} · ${p.progress}% complete</small></span>
-        <span class="badge badge-${p.status.toLowerCase()}">${STATUS_LABELS[p.status] || escapeHtml(p.status)}</span>
+        <span class="badge badge-${p.stage.toLowerCase()}">${STATUS_LABELS[p.stage] || escapeHtml(p.stage)}</span>
       </a>
     `).join('');
     setStatus('projectsStatus', '');
@@ -135,8 +138,8 @@ function renderProject() {
   const sent = !!project.submittedAt;
 
   $('chatTitle').textContent = project.name;
-  $('chatBadge').textContent = STATUS_LABELS[project.status] || project.status;
-  $('chatBadge').className = `badge badge-${project.status.toLowerCase()}`;
+  $('chatBadge').textContent = STATUS_LABELS[project.stage] || project.stage;
+  $('chatBadge').className = `badge badge-${project.stage.toLowerCase()}`;
   $('chatProgress').value = project.progress;
   $('chatProgressText').textContent = `Requirements ${project.progress}% complete`;
   $('sentNotice').hidden = !sent;
@@ -151,8 +154,12 @@ function renderProject() {
 
   $('chatComposer').hidden = sent;
   $('generateDraftBtn').hidden = sent;
-  $('generateDraftBtn').className = `btn ${project.progress >= 90 && (!current.prd || current.draftOutdated) ? 'btn-primary' : 'btn-outline'}`;
-  $('generateDraftBtn').textContent = current.prd ? 'Update draft' : 'Generate draft';
+  const label = current.prd ? 'Update document' : 'Create document';
+  $('generateDraftBtn').textContent = label;
+  $('readyCreateBtn').textContent = label;
+  $('readyNotice').hidden = !['READY', 'DOCUMENT_OUTDATED'].includes(project.stage);
+  if (current.draftOutdated) $('readyNotice').firstElementChild.textContent = 'Your chat has new details. Update your document to include them.';
+  else $('readyNotice').firstElementChild.textContent = 'Your requirements are ready. Create your document now, or keep chatting to add details.';
   renderDraft(sent);
 }
 
@@ -193,7 +200,7 @@ function showTyping(text) {
 
 function setBusy(value) {
   busy = value;
-  ['assistantSend', 'generateDraftBtn'].forEach(id => { $(id).disabled = value; });
+  ['assistantSend', 'generateDraftBtn', 'readyCreateBtn'].forEach(id => { $(id).disabled = value; });
   $('submitProjectBtn').disabled = value || !!current?.draftOutdated;
 }
 
@@ -260,11 +267,25 @@ $('assistantInput').addEventListener('keydown', (e) => {
   }
 });
 
-$('generateDraftBtn').addEventListener('click', async () => {
-  setStatus('chatStatus', 'Writing your draft. This can take up to a minute...');
-  await runAction(() => post(projectPath('/draft')), { done: 'Draft ready. Review it below, then send it to Thinkvalley.' });
+async function createDocument() {
+  if (busy) return;
+  setStatus('chatStatus', 'Writing your document. This can take up to a minute...');
+  await runAction(() => post(projectPath('/draft')), { done: 'Document ready. Download it below or send it to Thinkvalley.' });
   if (current?.prd && !current.draftOutdated) $('assistantDraft').scrollIntoView({ behavior: 'smooth' });
+}
+
+$('generateDraftBtn').addEventListener('click', createDocument);
+$('readyCreateBtn').addEventListener('click', createDocument);
+
+$('downloadWordBtn').addEventListener('click', async () => {
+  try {
+    await downloadWord(current);
+  } catch (err) {
+    setStatus('chatStatus', err.message, true);
+  }
 });
+
+$('downloadPdfBtn').addEventListener('click', () => printPdf(current));
 
 $('submitProjectBtn').addEventListener('click', () => {
   if (!confirm('Send these requirements to Thinkvalley? You can\'t change them afterwards.')) return;

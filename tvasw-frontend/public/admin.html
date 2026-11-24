@@ -728,6 +728,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="/markdown.js"></script>
+  <script src="/document.js"></script>
   <script>
     let allData = [];
     let filteredData = [];
@@ -808,6 +809,7 @@
     // Projects sent by clients
     const STATUS_LABELS = { SUBMITTED: 'New', IN_REVIEW: 'In review', QUOTED: 'Quoted', ACCEPTED: 'Accepted', DECLINED: 'Declined' };
     let selectedProject = null;
+    let projectDetail = null;
 
     function showTab(tab) {
       document.getElementById('projectsPane').hidden = tab !== 'projects';
@@ -847,13 +849,16 @@
       try {
         const detail = await adminFetch(`/${id}`);
         if (selectedProject !== id) return;
+        projectDetail = detail;
         const p = detail.project;
         document.getElementById('adminProject').innerHTML = `
           <h2>${escapeHtml(p.name)}</h2>
           <p>${escapeHtml(p.clientName || '')} · <a href="mailto:${escapeHtml(encodeURIComponent(p.clientEmail || ''))}">${escapeHtml(p.clientEmail || '')}</a></p>
           <p><label>Status: <select onchange="setProjectStatus(${Number(p.id)}, this.value)">
             ${Object.entries(STATUS_LABELS).map(([k, v]) => `<option value="${k}" ${k === p.status ? 'selected' : ''}>${v}</option>`).join('')}
-          </select></label></p>
+          </select></label>
+          <button type="button" class="sort-btn" onclick="downloadWord(projectDetail).catch(err => showToast(err.message, true))">Download Word</button>
+          <button type="button" class="sort-btn" onclick="printPdf(projectDetail)">Save as PDF</button></p>
           <p>${escapeHtml(detail.description).replace(/\n/g, '<br>')}</p>
           <h2>Product Requirements</h2>${renderMarkdown(detail.prd || '')}
           <h2>System Requirements</h2>${renderMarkdown(detail.srs || '')}

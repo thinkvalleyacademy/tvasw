@@ -134,20 +134,28 @@
         <p id="sentNotice" class="sent-notice" hidden>Your requirements have been sent to Thinkvalley. You can follow the status here.</p>
 
         <div id="assistantMessages" class="chat-messages" role="log" aria-live="polite"></div>
+        <div id="readyNotice" class="ready-notice" hidden>
+          <span></span>
+          <button type="button" class="btn btn-primary" id="readyCreateBtn">Create document</button>
+        </div>
         <div id="quickReplies" class="quick-replies"></div>
 
         <form id="chatComposer" class="chat-composer">
-          <textarea id="assistantInput" rows="2" maxlength="4000" placeholder="Pick an answer above or type your own..." aria-label="Your message"></textarea>
+          <textarea id="assistantInput" rows="2" maxlength="4000" placeholder="Type your answer..." aria-label="Your message"></textarea>
           <button type="submit" class="btn btn-primary" id="assistantSend">Send</button>
         </form>
         <p id="chatStatus" class="status-message" role="status"></p>
 
         <div class="assistant-actions">
-          <button type="button" class="btn btn-outline" id="generateDraftBtn">Generate draft</button>
+          <button type="button" class="btn btn-outline" id="generateDraftBtn">Create document</button>
         </div>
 
         <div class="assistant-draft" id="assistantDraft" hidden>
-          <p id="draftOutdated" class="draft-outdated" hidden>You have chatted since this draft was written. Update the draft before sending it.</p>
+          <p id="draftOutdated" class="draft-outdated" hidden>You have chatted since this document was written. Update it before downloading or sending.</p>
+          <div class="document-actions">
+            <button type="button" class="btn btn-outline" id="downloadWordBtn">Download Word</button>
+            <button type="button" class="btn btn-outline" id="downloadPdfBtn">Save as PDF</button>
+          </div>
           <div id="draftOutput" class="markdown"></div>
           <button type="button" class="btn btn-primary btn-full" id="submitProjectBtn">Send to Thinkvalley</button>
         </div>
@@ -157,6 +165,7 @@
 
   <script src="script.js"></script>
   <script src="markdown.js"></script>
+  <script src="document.js"></script>
   <script src="client.js"></script>
 </body>
 </html>

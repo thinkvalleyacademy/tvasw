@@ -1,0 +1,6 @@
+[Unit]
+Description=TVA-SW local backup
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash %h/apps/tvasw/backup.sh

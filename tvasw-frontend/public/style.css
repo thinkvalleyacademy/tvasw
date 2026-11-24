@@ -771,6 +771,36 @@ img {
   color: #991b1b;
 }
 
+.badge-ready,
+.badge-document_outdated {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-document_ready {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ready-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--blue-light);
+}
+
+.document-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
 .chat-progress {
   margin: 14px 0;
   color: var(--gray-500);

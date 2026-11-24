@@ -10,6 +10,9 @@ public class Project {
     public static final String CREATED = "CREATED";
     public static final String SUBMITTED = "SUBMITTED";
 
+    // From this progress on, the interview is finished and the document can be created
+    public static final int READY_PROGRESS = 90;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
