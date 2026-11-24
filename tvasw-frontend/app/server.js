@@ -11,7 +11,7 @@ const app = express(); // ✅ define FIRST
 if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
 
 // Simple per-IP limiter (in memory, reset on restart)
-function rateLimit(limit, periodMs) {
+function rateLimit(limit, periodMs, failuresOnly = false) {
   const hits = new Map();
   setInterval(() => {
     const now = Date.now();
@@ -26,8 +26,10 @@ function rateLimit(limit, periodMs) {
       hits.set(req.ip, hit);
     }
     if (++hit.count > limit) {
+      if (failuresOnly) hit.count--;
       return res.status(429).send('Too many requests. Please try again later.');
     }
+    if (failuresOnly) res.on('finish', () => { if (res.statusCode !== 401) hit.count--; });
     next();
   };
 }
@@ -39,6 +41,7 @@ const BACKEND_PORT = process.env.BACKEND_PORT || 8080;
 app.use('/api', (req, res) => {
   const headers = { ...req.headers };
   headers['x-forwarded-for'] = req.ip; // never pass on a client-supplied value
+  delete headers['x-admin-token'];
   delete headers.origin; // same-origin for the browser, so skip backend CORS
 
   const proxyReq = http.request({
@@ -122,17 +125,47 @@ function isAdminPassword(password) {
   return crypto.timingSafeEqual(hash(password), hash(process.env.ADMIN_PASSWORD));
 }
 
-// Admin API - password protected
-app.get('/admin/api', rateLimit(30, 15 * 60 * 1000), (req, res) => {
+// Admin API - password protected, at most 10 wrong passwords per 15 minutes
+app.use('/admin/api', rateLimit(10, 15 * 60 * 1000, true), (req, res, next) => {
   if (!isAdminPassword(req.get('X-Admin-Password'))) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  next();
+});
+
+app.get('/admin/api', (req, res) => {
   try {
     const data = JSON.parse(fs.readFileSync(DATA_FILE));
     res.json(data);
   } catch (err) {
     res.status(500).send('Error reading queries');
   }
+});
+
+// Client projects, served by the backend
+async function adminBackend(res, path, options = {}) {
+  try {
+    const resp = await fetch(`http://${BACKEND_HOST}:${BACKEND_PORT}/api/internal/projects${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': process.env.ADMIN_API_TOKEN || '' },
+      signal: AbortSignal.timeout(15000)
+    });
+    // 401 here would mean a token mismatch, not a wrong admin password
+    const status = resp.status === 401 ? 502 : resp.status;
+    res.status(status).type('json').send(await resp.text());
+  } catch (err) {
+    console.error(err.message);
+    res.status(502).json({ error: 'Backend unavailable' });
+  }
+}
+
+app.get('/admin/api/projects', (req, res) => adminBackend(res, ''));
+
+app.get('/admin/api/projects/:id', (req, res) => adminBackend(res, `/${encodeURIComponent(req.params.id)}`));
+
+app.post('/admin/api/projects/:id/status', (req, res) => {
+  const body = JSON.stringify({ status: req.body?.status });
+  return adminBackend(res, `/${encodeURIComponent(req.params.id)}/status`, { method: 'POST', body });
 });
 
 // Start server

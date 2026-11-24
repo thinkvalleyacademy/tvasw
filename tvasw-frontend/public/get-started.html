@@ -24,7 +24,7 @@
       <div class="section-header">
         <span class="section-tag">Get Started</span>
         <h2>Tell us about your project</h2>
-        <p>Fill this short form so we can match the right team and provide an initial estimate.</p>
+        <p>Describe your idea, chat with our AI assistant, and send the finished requirements to Thinkvalley.</p>
       </div>
 
       <form id="authForm" class="contact-form">
@@ -48,17 +48,26 @@
         <p id="authStatus" class="status-message"></p>
       </form>
 
-      <p id="authUser" hidden><span id="authUserEmail"></span> <button type="button" class="btn btn-outline" id="logoutBtn">Log out</button></p>
+      <div id="authUser" class="client-bar" hidden>
+        <span id="authUserEmail"></span>
+        <span class="client-links">
+          <a href="#projects" class="btn btn-outline">My projects</a>
+          <a href="#new" class="btn btn-outline">New project</a>
+          <button type="button" class="btn btn-outline" id="logoutBtn">Log out</button>
+        </span>
+      </div>
 
-      <form id="getStartedForm" class="contact-form" hidden>
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" name="name" maxlength="100" placeholder="Jane Doe" required>
-        </div>
+      <section id="projectsView" hidden>
+        <h3>My projects</h3>
+        <div id="projectList" class="project-list"></div>
+        <p id="projectsStatus" class="status-message"></p>
+      </section>
 
+      <section id="newProjectView" hidden>
+      <form id="getStartedForm" class="contact-form">
         <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" placeholder="you@company.com" required>
+          <label for="projectName">Project Name</label>
+          <input type="text" id="projectName" name="projectName" maxlength="150" placeholder="School fee tracker" required>
         </div>
 
         <div class="form-group">
@@ -107,44 +116,47 @@
         </div>
 
         <button type="submit" class="btn btn-primary btn-full" id="getStartedSubmit">
-          <span class="btn-text">Submit Requirements</span>
-          <span class="btn-loader" style="display:none;">Submitting...</span>
+          Start AI chat
         </button>
       </form>
-
-      <section class="assistant-section">
-        <div class="assistant-panel hidden" id="assistantPanel">
-          <div class="assistant-header">
-            <div>
-              <h3>AI Requirement Assistant</h3>
-              <p>Our assistant will help you refine your summary, ask clarification questions, and generate a polished requirements draft.</p>
-            </div>
-          </div>
-
-          <div id="assistantMessages" class="assistant-messages"></div>
-
-          <div class="assistant-actions">
-            <button type="button" class="btn btn-outline" id="generateDraftBtn">Generate Draft</button>
-          </div>
-
-          <div class="assistant-input-row">
-            <input type="text" id="assistantInput" maxlength="4000" placeholder="Ask the AI assistant a clarifying question..." autocomplete="off">
-            <button type="button" class="btn btn-primary" id="assistantSend">Send</button>
-          </div>
-
-          <div class="assistant-draft hidden" id="assistantDraft">
-            <h4>Suggested Requirement Draft</h4>
-            <pre id="draftOutput"></pre>
-          </div>
-        </div>
-
-        <p id="assistantStatus" class="status-message"></p>
+      <p id="getStartedStatus" class="status-message"></p>
       </section>
 
-      <p id="getStartedStatus" class="status-message"></p>
+      <section id="chatView" class="assistant-panel" hidden>
+        <div class="chat-header">
+          <h3 id="chatTitle"></h3>
+          <span id="chatBadge" class="badge"></span>
+        </div>
+        <div class="chat-progress">
+          <progress id="chatProgress" max="100" value="0" aria-labelledby="chatProgressText"></progress>
+          <small id="chatProgressText"></small>
+        </div>
+        <p id="sentNotice" class="sent-notice" hidden>Your requirements have been sent to Thinkvalley. You can follow the status here.</p>
+
+        <div id="assistantMessages" class="chat-messages" role="log" aria-live="polite"></div>
+        <div id="quickReplies" class="quick-replies"></div>
+
+        <form id="chatComposer" class="chat-composer">
+          <textarea id="assistantInput" rows="2" maxlength="4000" placeholder="Pick an answer above or type your own..." aria-label="Your message"></textarea>
+          <button type="submit" class="btn btn-primary" id="assistantSend">Send</button>
+        </form>
+        <p id="chatStatus" class="status-message" role="status"></p>
+
+        <div class="assistant-actions">
+          <button type="button" class="btn btn-outline" id="generateDraftBtn">Generate draft</button>
+        </div>
+
+        <div class="assistant-draft" id="assistantDraft" hidden>
+          <p id="draftOutdated" class="draft-outdated" hidden>You have chatted since this draft was written. Update the draft before sending it.</p>
+          <div id="draftOutput" class="markdown"></div>
+          <button type="button" class="btn btn-primary btn-full" id="submitProjectBtn">Send to Thinkvalley</button>
+        </div>
+      </section>
     </div>
   </main>
 
   <script src="script.js"></script>
+  <script src="markdown.js"></script>
+  <script src="client.js"></script>
 </body>
 </html>

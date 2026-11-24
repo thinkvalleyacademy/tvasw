@@ -39,6 +39,14 @@ public class GeminiClient {
     }
 
     public String generate(String prompt) {
+        return generate(prompt, Map.of());
+    }
+
+    public String generateJson(String prompt, Map<String, Object> schema) {
+        return generate(prompt, Map.of("responseMimeType", "application/json", "responseSchema", schema));
+    }
+
+    private String generate(String prompt, Map<String, Object> config) {
         if (apiKey == null || apiKey.isBlank()) {
             // fallback: simple echo / simulated response
             return "[SIMULATED GEMINI RESPONSE] Based on idea: " + prompt;
@@ -46,7 +54,7 @@ public class GeminiClient {
 
         Map<String, Object> part = Map.of("text", prompt);
         Map<String, Object> contents = Map.of("parts", List.of(part));
-        Map<String, Object> payload = Map.of("contents", List.of(contents));
+        Map<String, Object> payload = Map.of("contents", List.of(contents), "generationConfig", config);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

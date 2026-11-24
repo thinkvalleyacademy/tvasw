@@ -29,6 +29,10 @@ public class ChatMessage {
     @Column(nullable = false, length = 100000)
     private String content;
 
+    // Quick replies offered with an assistant message, one per line
+    @Column(length = 1000)
+    private String options;
+
     private Instant createdAt = Instant.now();
 
     public ChatMessage() {}
@@ -45,5 +49,7 @@ public class ChatMessage {
     public Long getProjectId() { return projectId; }
     public String getAuthor() { return author; }
     public String getContent() { return content; }
+    public String getOptions() { return options; }
+    public void setOptions(String options) { this.options = options; }
     public Instant getCreatedAt() { return createdAt; }
 }

@@ -18,11 +18,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-@SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:apitests", "tvasw.limits.register-per-hour=5"})
+@SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:apitests", "tvasw.limits.register-per-hour=5", "tvasw.app.admin-token=test-token"})
 @AutoConfigureMockMvc
 class ApiTests {
 
@@ -56,7 +57,7 @@ class ApiTests {
     @Test
     void aiApiNeedsLogin() throws Exception {
         assertEquals(401, send(post("/api/ai/projects"), null, Map.of("name", "P", "description", "d")).getStatus());
-        assertEquals(401, send(get("/api/ai/draft/1"), "bad.token.here", null).getStatus());
+        assertEquals(401, send(get("/api/ai/projects"), "bad.token.here", null).getStatus());
     }
 
     @Test
@@ -82,34 +83,73 @@ class ApiTests {
     }
 
     @Test
-    void draftUsesChatAndProjectsArePrivate() throws Exception {
-        when(gemini.generate(anyString())).thenReturn("How many students?");
+    void chatDraftAndSubmit() throws Exception {
+        when(gemini.generateJson(anyString(), anyMap())).thenReturn(
+            "{\"message\":\"How many students?\",\"options\":[\"Under 100\",\"100-500\"],\"progress\":40}");
+        when(gemini.generate(anyString())).thenReturn("draft text");
         String owner = register("owner@example.com");
         String other = register("other@example.com");
         long id = project(owner);
-        String session = tree(send(post("/api/ai/start"), owner, Map.of("projectId", id, "ideaText", "idea"))).get("sessionId").asText();
-        Map<String, Object> message = Map.of("projectId", id, "sessionId", session, "message", "We have 217 students");
-        assertEquals(200, send(post("/api/ai/message"), owner, message).getStatus());
+        String url = "/api/ai/projects/" + id;
 
-        assertEquals(404, send(post("/api/ai/message"), other, message).getStatus());
-        assertEquals(404, send(post("/api/ai/start"), other, Map.of("projectId", id, "ideaText", "x")).getStatus());
-        assertEquals(404, send(get("/api/ai/draft/" + id), other, null).getStatus());
+        JsonNode started = tree(send(post(url + "/start"), owner, null));
+        assertEquals("100-500", started.at("/messages/0/options/1").asText());
+        assertEquals(40, started.at("/project/progress").asInt());
+        assertEquals(1, tree(send(post(url + "/start"), owner, null)).get("messages").size());
 
-        clearInvocations(gemini);
-        assertEquals(200, send(get("/api/ai/draft/" + id), owner, null).getStatus());
+        Map<String, Object> message = Map.of("message", "We have 217 students");
+        assertEquals(409, send(post(url + "/submit"), owner, null).getStatus());
+        assertEquals(3, tree(send(post(url + "/messages"), owner, message)).get("messages").size());
+
+        assertEquals(404, send(get(url), other, null).getStatus());
+        for (String action : new String[]{"/start", "/draft", "/submit"}) {
+            assertEquals(404, send(post(url + action), other, null).getStatus());
+        }
+        assertEquals(404, send(post(url + "/messages"), other, message).getStatus());
+        assertEquals(0, tree(send(get("/api/ai/projects"), other, null)).size());
+
+        assertEquals("draft text", tree(send(post(url + "/draft"), owner, null)).get("prd").asText());
         ArgumentCaptor<String> prompts = ArgumentCaptor.forClass(String.class);
         verify(gemini, times(2)).generate(prompts.capture());
         prompts.getAllValues().forEach(p -> assertTrue(p.contains("217 students") && p.contains("fee tracker")));
+
+        // A newer message makes the draft outdated, so it cannot be submitted
+        assertTrue(tree(send(post(url + "/messages"), owner, message)).get("draftOutdated").asBoolean());
+        assertEquals(409, send(post(url + "/submit"), owner, null).getStatus());
+        send(post(url + "/draft"), owner, null);
+
+        assertEquals(404, send(get("/api/internal/projects/" + id).header("X-Admin-Token", "test-token"), null, null).getStatus());
+        assertEquals("SUBMITTED", tree(send(post(url + "/submit"), owner, null)).at("/project/status").asText());
+        assertEquals(409, send(post(url + "/messages"), owner, message).getStatus());
+
+        // Admin API
+        String admin = "/api/internal/projects";
+        assertEquals(401, send(get(admin), null, null).getStatus());
+        assertEquals(403, send(get(admin), owner, null).getStatus());
+        assertEquals(401, send(get(admin).header("X-Admin-Token", "wrong"), null, null).getStatus());
+        JsonNode listed = tree(send(get(admin).header("X-Admin-Token", "test-token"), null, null));
+        assertEquals("owner@example.com", listed.at("/0/clientEmail").asText());
+        assertEquals(400, send(post(admin + "/" + id + "/status").header("X-Admin-Token", "test-token"), null, Map.of("status", "X")).getStatus());
+        send(post(admin + "/" + id + "/status").header("X-Admin-Token", "test-token"), null, Map.of("status", "QUOTED"));
+        assertEquals("QUOTED", tree(send(get(url), owner, null)).at("/project/status").asText());
+    }
+
+    @Test
+    void plainTextReplyStillWorks() throws Exception {
+        when(gemini.generateJson(anyString(), anyMap())).thenReturn("not json");
+        String token = register("plain@example.com");
+        JsonNode r = tree(send(post("/api/ai/projects/" + project(token) + "/start"), token, null));
+        assertEquals("not json", r.at("/messages/0/content").asText());
     }
 
     @Test
     void aiCallsAreLimitedPerMinute() throws Exception {
-        when(gemini.generate(anyString())).thenReturn("ok");
+        when(gemini.generateJson(anyString(), anyMap())).thenReturn("ok");
         String token = register("limit@example.com");
         long id = project(token);
         int status = 0;
         for (int i = 0; i < 11; i++) {
-            status = send(post("/api/ai/start"), token, Map.of("projectId", id, "ideaText", "x")).getStatus();
+            status = send(post("/api/ai/projects/" + id + "/messages"), token, Map.of("message", "x")).getStatus();
             if (i == 9) assertEquals(200, status);
         }
         assertEquals(429, status);

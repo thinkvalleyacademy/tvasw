@@ -6,7 +6,7 @@ SERVER="${SERVER:-tva-pd@100.114.88.64}"
 BIND_IP="${SERVER#*@}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-(cd "$ROOT/tvasw-backend" && mvn -q -B clean package)
+(cd "$ROOT/tvasw-backend" && mvn -q -B clean package > /tmp/tvasw-build.log 2>&1 || { tail -40 /tmp/tvasw-build.log; exit 1; })
 
 ssh "$SERVER" 'mkdir -p ~/apps/tvasw/{frontend/app,data,client_queries} ~/.config/systemd/user && chmod 700 ~/apps/tvasw'
 scp -q "$ROOT/tvasw-backend/target/backend-0.0.1-SNAPSHOT.jar" "$SERVER:apps/tvasw/backend.jar.new"
@@ -40,6 +40,17 @@ BACKEND_PORT=8080
 DATA_DIR=$HOME/apps/tvasw/client_queries
 ADMIN_PASSWORD=$(openssl rand -hex 12)
 EOF
+fi
+
+# Shared token that lets the frontend call the backend admin API
+if ! grep -q '^TVASW_APP_ADMINTOKEN=' backend.env || ! grep -q '^ADMIN_API_TOKEN=' frontend.env; then
+  TOKEN=$(openssl rand -hex 32)
+  for entry in "backend.env TVASW_APP_ADMINTOKEN" "frontend.env ADMIN_API_TOKEN"; do
+    set -- $entry
+    grep -v "^$2=" "$1" > "$1.new" || true
+    echo "$2=$TOKEN" >> "$1.new"
+    mv "$1.new" "$1"
+  done
 fi
 
 (cd frontend/app && npm ci --omit=dev --silent)

@@ -49,6 +49,75 @@
       min-height: 100vh;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
+    /* Projects */
+    .project-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) 2fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .project-item {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      text-align: left;
+      font: inherit;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .project-item.active {
+      border-color: var(--blue);
+    }
+
+    .project-item small {
+      display: block;
+      color: var(--gray-500);
+    }
+
+    .project-detail {
+      padding: 24px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow-wrap: anywhere;
+    }
+
+    .project-detail h2, .project-detail h3, .project-detail h4, .project-detail h5 {
+      margin: 16px 0 6px;
+    }
+
+    .project-detail ul, .project-detail ol {
+      padding-left: 22px;
+    }
+
+    .project-detail p {
+      margin-bottom: 8px;
+    }
+
+    .project-detail details {
+      margin-top: 16px;
+    }
+
+    .project-detail select {
+      padding: 8px;
+      font: inherit;
+    }
+
+    @media (max-width: 800px) {
+      .project-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* Topbar */
     .topbar {
       background: var(--navy);
@@ -570,6 +639,19 @@
   </div>
 
   <div class="main" id="dashboardContent" style="display:none;">
+    <div class="filter-bar">
+      <button class="sort-btn active" id="tabProjects" onclick="showTab('projects')">Projects</button>
+      <button class="sort-btn" id="tabInquiries" onclick="showTab('inquiries')">Inquiries</button>
+    </div>
+
+    <div id="projectsPane">
+      <div class="project-grid">
+        <div id="adminProjects"></div>
+        <div id="adminProject" class="project-detail"><p>Select a project to see its requirements.</p></div>
+      </div>
+    </div>
+
+    <div id="inquiriesPane" hidden>
     <div class="stats" id="stats">
       <div class="stat-card">
         <div class="stat-value" id="totalQueries">—</div>
@@ -618,6 +700,7 @@
     </div>
 
     <div id="tableState"></div>
+    </div>
   </div>
 
   <!-- Login Screen -->
@@ -644,6 +727,7 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="/markdown.js"></script>
   <script>
     let allData = [];
     let filteredData = [];
@@ -656,6 +740,7 @@
         return;
       }
       loadData();
+      loadProjects();
     }
 
     // Login form
@@ -687,7 +772,7 @@
         applySort();
         renderTable();
         updateStats();
-        showToast(`${allData.length} inquiry(s) loaded`);
+        loadProjects();
       } catch (err) {
         errorEl.textContent = 'Incorrect password. Please try again.';
         input.value = '';
@@ -717,6 +802,78 @@
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><h3>Error loading data</h3><p>Please try again.</p></div></td></tr>';
         showToast('Failed to load data', true);
+      }
+    }
+
+    // Projects sent by clients
+    const STATUS_LABELS = { SUBMITTED: 'New', IN_REVIEW: 'In review', QUOTED: 'Quoted', ACCEPTED: 'Accepted', DECLINED: 'Declined' };
+    let selectedProject = null;
+
+    function showTab(tab) {
+      document.getElementById('projectsPane').hidden = tab !== 'projects';
+      document.getElementById('inquiriesPane').hidden = tab !== 'inquiries';
+      document.getElementById('tabProjects').classList.toggle('active', tab === 'projects');
+      document.getElementById('tabInquiries').classList.toggle('active', tab === 'inquiries');
+    }
+
+    async function adminFetch(path, options = {}) {
+      const res = await fetch(`/admin/api/projects${path}`, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPassword }
+      });
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      return await res.json();
+    }
+
+    async function loadProjects() {
+      const list = document.getElementById('adminProjects');
+      try {
+        const projects = await adminFetch('');
+        list.innerHTML = projects.map(p => `
+          <button type="button" class="project-item ${p.id === selectedProject ? 'active' : ''}" onclick="openProject(${Number(p.id)})">
+            <strong>${escapeHtml(p.name)}</strong>
+            <small>${escapeHtml(p.clientName || '')} · ${new Date(p.submittedAt).toLocaleDateString()}</small>
+            <small>${STATUS_LABELS[p.status] || escapeHtml(p.status)}</small>
+          </button>
+        `).join('') || '<p>No projects sent yet.</p>';
+      } catch (err) {
+        list.innerHTML = '<p>Could not load projects.</p>';
+        showToast(err.message, true);
+      }
+    }
+
+    async function openProject(id) {
+      selectedProject = id;
+      try {
+        const detail = await adminFetch(`/${id}`);
+        if (selectedProject !== id) return;
+        const p = detail.project;
+        document.getElementById('adminProject').innerHTML = `
+          <h2>${escapeHtml(p.name)}</h2>
+          <p>${escapeHtml(p.clientName || '')} · <a href="mailto:${escapeHtml(encodeURIComponent(p.clientEmail || ''))}">${escapeHtml(p.clientEmail || '')}</a></p>
+          <p><label>Status: <select onchange="setProjectStatus(${Number(p.id)}, this.value)">
+            ${Object.entries(STATUS_LABELS).map(([k, v]) => `<option value="${k}" ${k === p.status ? 'selected' : ''}>${v}</option>`).join('')}
+          </select></label></p>
+          <p>${escapeHtml(detail.description).replace(/\n/g, '<br>')}</p>
+          <h2>Product Requirements</h2>${renderMarkdown(detail.prd || '')}
+          <h2>System Requirements</h2>${renderMarkdown(detail.srs || '')}
+          <details><summary>Chat (${detail.messages.length} messages)</summary>
+            ${detail.messages.map(m => `<p><strong>${escapeHtml(m.author)}:</strong> ${escapeHtml(m.content).replace(/\n/g, '<br>')}</p>`).join('')}
+          </details>`;
+        loadProjects();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function setProjectStatus(id, status) {
+      try {
+        await adminFetch(`/${id}/status`, { method: 'POST', body: JSON.stringify({ status }) });
+        showToast('Status updated');
+        loadProjects();
+      } catch (err) {
+        showToast(err.message, true);
+        openProject(id);
       }
     }
 
