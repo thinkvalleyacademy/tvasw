@@ -1,8 +1,13 @@
 package com.tvasw.backend.dto;
 
+import jakarta.validation.constraints.*;
+
 public class CreateProjectRequest {
+    @NotBlank @Size(max = 255)
     private String name;
+    @Size(max = 255)
     private String industry;
+    @NotBlank @Size(max = 2000)
     private String description;
 
     public String getName() { return name; }

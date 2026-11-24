@@ -3,15 +3,42 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const crypto = require('crypto');
 
 const app = express(); // ✅ define FIRST
 
-// Proxy AI API to the backend (must run before body parsers)
+// Set TRUST_PROXY=loopback when running behind a local reverse proxy
+if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
+
+// Simple per-IP limiter (in memory, reset on restart)
+function rateLimit(limit, periodMs) {
+  const hits = new Map();
+  setInterval(() => {
+    const now = Date.now();
+    hits.forEach((h, ip) => { if (h.expiresAt <= now) hits.delete(ip); });
+  }, periodMs).unref();
+
+  return (req, res, next) => {
+    const now = Date.now();
+    let hit = hits.get(req.ip);
+    if (!hit || hit.expiresAt <= now) {
+      hit = { count: 0, expiresAt: now + periodMs };
+      hits.set(req.ip, hit);
+    }
+    if (++hit.count > limit) {
+      return res.status(429).send('Too many requests. Please try again later.');
+    }
+    next();
+  };
+}
+
+// Proxy API to the backend (must run before body parsers)
 const BACKEND_HOST = process.env.BACKEND_HOST || '127.0.0.1';
 const BACKEND_PORT = process.env.BACKEND_PORT || 8080;
 
-app.use('/api/ai', (req, res) => {
+app.use('/api', (req, res) => {
   const headers = { ...req.headers };
+  headers['x-forwarded-for'] = req.ip; // never pass on a client-supplied value
   delete headers.origin; // same-origin for the browser, so skip backend CORS
 
   const proxyReq = http.request({
@@ -59,7 +86,7 @@ if (!fs.existsSync(DATA_FILE)) {
 }
 
 // Save query
-app.post('/send', (req, res) => {
+app.post('/send', rateLimit(5, 10 * 60 * 1000), (req, res) => {
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
@@ -89,10 +116,15 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
+function isAdminPassword(password) {
+  if (!process.env.ADMIN_PASSWORD || !password) return false;
+  const hash = (s) => crypto.createHash('sha256').update(s).digest();
+  return crypto.timingSafeEqual(hash(password), hash(process.env.ADMIN_PASSWORD));
+}
+
 // Admin API - password protected
-app.get('/admin/api', (req, res) => {
-  const { password } = req.query;
-  if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+app.get('/admin/api', rateLimit(30, 15 * 60 * 1000), (req, res) => {
+  if (!isAdminPassword(req.get('X-Admin-Password'))) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   try {

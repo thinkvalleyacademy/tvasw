@@ -675,7 +675,7 @@
       adminPassword = input.value;
 
       try {
-        const res = await fetch(`/admin/api?password=${encodeURIComponent(adminPassword)}`);
+        const res = await fetch('/admin/api', { headers: { 'X-Admin-Password': adminPassword } });
         if (!res.ok) {
           throw new Error('Incorrect password');
         }
@@ -704,7 +704,7 @@
       tbody.innerHTML = '<tr><td colspan="5"><div class="loading"><div class="spinner"></div><p>Loading inquiries...</p></div></td></tr>';
 
       try {
-        const res = await fetch(`/admin/api?password=${encodeURIComponent(adminPassword)}`);
+        const res = await fetch('/admin/api', { headers: { 'X-Admin-Password': adminPassword } });
         if (!res.ok) {
           throw new Error('Unauthorized');
         }
@@ -819,15 +819,6 @@
       }
       applySort();
       renderTable();
-    });
-
-    // Init - check URL for password
-    window.addEventListener('load', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const pass = urlParams.get('pass');
-      if (pass) {
-        document.getElementById('passwordInput').value = pass;
-      }
     });
   </script>
 

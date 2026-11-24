@@ -27,10 +27,33 @@
         <p>Fill this short form so we can match the right team and provide an initial estimate.</p>
       </div>
 
-      <form id="getStartedForm" class="contact-form">
+      <form id="authForm" class="contact-form">
+        <div class="auth-tabs">
+          <button type="button" class="btn btn-primary" id="authTabRegister" aria-pressed="true">Create account</button>
+          <button type="button" class="btn btn-outline" id="authTabLogin" aria-pressed="false">Log in</button>
+        </div>
+        <div class="form-group" id="authNameGroup">
+          <label for="authName">Full Name</label>
+          <input type="text" id="authName" maxlength="100" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label for="authEmail">Email Address</label>
+          <input type="email" id="authEmail" maxlength="255" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label for="authPassword">Password (at least 8 characters)</label>
+          <input type="password" id="authPassword" minlength="8" maxlength="72" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="authSubmit">Create account</button>
+        <p id="authStatus" class="status-message"></p>
+      </form>
+
+      <p id="authUser" hidden><span id="authUserEmail"></span> <button type="button" class="btn btn-outline" id="logoutBtn">Log out</button></p>
+
+      <form id="getStartedForm" class="contact-form" hidden>
         <div class="form-group">
           <label for="name">Full Name</label>
-          <input type="text" id="name" name="name" placeholder="Jane Doe" required>
+          <input type="text" id="name" name="name" maxlength="100" placeholder="Jane Doe" required>
         </div>
 
         <div class="form-group">
@@ -51,7 +74,7 @@
 
         <div class="form-group">
           <label for="summary">Project Summary / More Details</label>
-          <textarea id="summary" name="summary" rows="6" placeholder="Describe the problem, goals, and success criteria..." required></textarea>
+          <textarea id="summary" name="summary" rows="6" maxlength="1700" placeholder="Describe the problem, goals, and success criteria..." required></textarea>
         </div>
 
         <div class="form-row">
@@ -80,7 +103,7 @@
 
         <div class="form-group">
           <label for="tech">Preferred Technologies (optional)</label>
-          <input type="text" id="tech" name="tech" placeholder="React, Java, Node.js, PostgreSQL">
+          <input type="text" id="tech" name="tech" maxlength="150" placeholder="React, Java, Node.js, PostgreSQL">
         </div>
 
         <button type="submit" class="btn btn-primary btn-full" id="getStartedSubmit">
@@ -105,7 +128,7 @@
           </div>
 
           <div class="assistant-input-row">
-            <input type="text" id="assistantInput" placeholder="Ask the AI assistant a clarifying question..." autocomplete="off">
+            <input type="text" id="assistantInput" maxlength="4000" placeholder="Ask the AI assistant a clarifying question..." autocomplete="off">
             <button type="button" class="btn btn-primary" id="assistantSend">Send</button>
           </div>
 

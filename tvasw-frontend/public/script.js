@@ -127,38 +127,53 @@ function appendAssistantMessage(role, text) {
   container.scrollTop = container.scrollHeight;
 }
 
+// Login state for this browser tab
+function getAuth() {
+  try {
+    return JSON.parse(sessionStorage.getItem('tvaswAuth'));
+  } catch (err) {
+    return null;
+  }
+}
+
+function setAuth(auth) {
+  if (auth) sessionStorage.setItem('tvaswAuth', JSON.stringify(auth));
+  else sessionStorage.removeItem('tvaswAuth');
+  renderAuth();
+}
+
+async function apiFetch(path, options = {}) {
+  const auth = getAuth();
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (auth) headers.Authorization = `Bearer ${auth.token}`;
+
+  const resp = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  if (resp.ok) return await resp.json();
+
+  const body = await resp.json().catch(() => ({}));
+  if (resp.status === 401 && auth) {
+    setAuth(null);
+    throw new Error('Your login has expired. Please log in again.');
+  }
+  throw new Error(body.error || `Request failed (${resp.status})`);
+}
+
 async function startAiAssistant(projectId, ideaText) {
-  const resp = await fetch(`${API_BASE}/api/ai/start`, {
+  return await apiFetch('/api/ai/start', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ projectId, ideaText })
   });
-
-  if (!resp.ok) {
-    throw new Error(`AI assistant failed to start (${resp.status})`);
-  }
-  return await resp.json();
 }
 
 async function sendAssistantMessage(projectId, sessionId, message) {
-  const resp = await fetch(`${API_BASE}/api/ai/message`, {
+  return await apiFetch('/api/ai/message', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ projectId, sessionId, message })
   });
-
-  if (!resp.ok) {
-    throw new Error(`AI assistant message failed (${resp.status})`);
-  }
-  return await resp.json();
 }
 
 async function fetchRequirementDraft(projectId) {
-  const resp = await fetch(`${API_BASE}/api/ai/draft/${projectId}`);
-  if (!resp.ok) {
-    throw new Error(`Draft generation failed (${resp.status})`);
-  }
-  return await resp.json();
+  return await apiFetch(`/api/ai/draft/${projectId}`);
 }
 
 let aiProjectId = null;
@@ -197,18 +212,10 @@ async function handleGetStartedSubmit(formEl, statusElId, submitBtnId) {
       tech ? `Preferred Technologies: ${tech}` : 'Preferred Technologies: Not specified'
     ].join('\n');
 
-    const projectResponse = await fetch(`${API_BASE}/api/ai/projects`, {
+    const project = await apiFetch('/api/ai/projects', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: projectName, industry: requirementType, description: projectDescription })
     });
-
-    if (!projectResponse.ok) {
-      const errorText = await projectResponse.text();
-      throw new Error(errorText || `Project creation failed (${projectResponse.status})`);
-    }
-
-    const project = await projectResponse.json();
     aiProjectId = project.id;
 
     const assistantResponse = await startAiAssistant(aiProjectId, summary);
@@ -303,4 +310,81 @@ if (generateDraftBtn) {
       setAssistantStatus(err?.message || 'Draft generation failed.', true);
     }
   });
+}
+
+// Login and registration (Get Started page)
+function renderAuth() {
+  const authForm = document.getElementById('authForm');
+  if (!authForm) return;
+
+  const auth = getAuth();
+  authForm.hidden = !!auth;
+  document.getElementById('authUser').hidden = !auth;
+  document.getElementById('getStartedForm').hidden = !auth;
+  if (!auth) {
+    showAssistantPanel(false);
+    return;
+  }
+
+  document.getElementById('authUserEmail').textContent = `Logged in as ${auth.email}`;
+  const name = document.getElementById('name');
+  const email = document.getElementById('email');
+  if (!name.value) name.value = auth.name;
+  if (!email.value) email.value = auth.email;
+  if (aiSessionId) showAssistantPanel(true);
+}
+
+const authForm = document.getElementById('authForm');
+if (authForm) {
+  let registering = true;
+
+  function setAuthMode(register) {
+    registering = register;
+    [['authTabRegister', register], ['authTabLogin', !register]].forEach(([id, active]) => {
+      const tab = document.getElementById(id);
+      tab.classList.toggle('btn-primary', active);
+      tab.classList.toggle('btn-outline', !active);
+      tab.setAttribute('aria-pressed', active);
+    });
+    document.getElementById('authSubmit').textContent = register ? 'Create account' : 'Log in';
+    document.getElementById('authNameGroup').hidden = !register;
+    document.getElementById('authName').required = register;
+    document.getElementById('authPassword').autocomplete = register ? 'new-password' : 'current-password';
+    document.getElementById('authStatus').textContent = '';
+  }
+
+  document.getElementById('authTabRegister').addEventListener('click', () => setAuthMode(true));
+  document.getElementById('authTabLogin').addEventListener('click', () => setAuthMode(false));
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('authStatus');
+    const btn = document.getElementById('authSubmit');
+    const password = document.getElementById('authPassword');
+    const payload = { email: document.getElementById('authEmail').value.trim(), password: password.value };
+    if (registering) payload.name = document.getElementById('authName').value.trim();
+
+    status.textContent = '';
+    btn.disabled = true;
+    try {
+      const auth = await apiFetch(registering ? '/api/auth/register' : '/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      password.value = '';
+      setAuth(auth);
+    } catch (err) {
+      status.textContent = err.message;
+      status.style.color = '#dc2626';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.removeItem('tvaswAuth');
+    window.location.reload(); // also clears the form and conversation
+  });
+
+  renderAuth();
 }

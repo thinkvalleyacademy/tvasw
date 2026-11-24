@@ -1,5 +1,6 @@
 package com.tvasw.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -19,6 +20,9 @@ public class Project {
     private String description;
 
     private String status;
+
+    @JsonIgnore
+    private Long ownerId;
 
     private Instant createdAt = Instant.now();
 
@@ -62,6 +66,14 @@ public class Project {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 
     public Instant getCreatedAt() {

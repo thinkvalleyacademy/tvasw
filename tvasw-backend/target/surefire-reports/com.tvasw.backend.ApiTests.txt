@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.tvasw.backend.ApiTests
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.45 s -- in com.tvasw.backend.ApiTests

@@ -307,8 +307,28 @@ img {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
+.section-light .btn-outline {
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+.section-light .btn-outline:hover {
+  background: var(--blue-light);
+  border-color: var(--blue);
+}
+
 .btn-full {
   width: 100%;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.auth-tabs .btn {
+  flex: 1;
 }
 
 /* ===== Sections ===== */
