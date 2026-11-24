@@ -1,0 +1,14 @@
+[Unit]
+Description=TVA-SW frontend (Express)
+After=tvasw-backend.service
+StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=%h/apps/tvasw/frontend
+EnvironmentFile=%h/apps/tvasw/frontend.env
+ExecStart=/usr/bin/node app/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

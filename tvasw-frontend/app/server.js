@@ -2,8 +2,37 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 
 const app = express(); // ✅ define FIRST
+
+// Proxy AI API to the backend (must run before body parsers)
+const BACKEND_HOST = process.env.BACKEND_HOST || '127.0.0.1';
+const BACKEND_PORT = process.env.BACKEND_PORT || 8080;
+
+app.use('/api/ai', (req, res) => {
+  const headers = { ...req.headers };
+  delete headers.origin; // same-origin for the browser, so skip backend CORS
+
+  const proxyReq = http.request({
+    host: BACKEND_HOST,
+    port: BACKEND_PORT,
+    path: req.originalUrl,
+    method: req.method,
+    headers
+  }, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res);
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error(err.message);
+    if (res.headersSent) return res.destroy();
+    res.status(502).json({ error: 'Backend unavailable' });
+  });
+  res.on('close', () => proxyReq.destroy());
+  req.pipe(proxyReq);
+});
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -63,7 +92,7 @@ app.get('/admin', (req, res) => {
 // Admin API - password protected
 app.get('/admin/api', (req, res) => {
   const { password } = req.query;
-  if (password !== 'tva808#') {
+  if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   try {
@@ -77,6 +106,8 @@ app.get('/admin/api', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 4080;
 
-app.listen(PORT, '0.0.0.0', () => {
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -107,6 +107,12 @@ function showAssistantPanel(show) {
   panel.classList.toggle('hidden', !show);
 }
 
+function escapeHtml(text) {
+  const el = document.createElement('div');
+  el.textContent = text;
+  return el.innerHTML;
+}
+
 function appendAssistantMessage(role, text) {
   const container = document.getElementById('assistantMessages');
   if (!container) return;
@@ -115,7 +121,7 @@ function appendAssistantMessage(role, text) {
   messageEl.className = `assistant-message ${role}`;
   messageEl.innerHTML = `
     <span class="assistant-role">${role === 'user' ? 'You' : 'AI Assistant'}</span>
-    <p>${text.replace(/\n/g, '<br>')}</p>
+    <p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>
   `;
   container.appendChild(messageEl);
   container.scrollTop = container.scrollHeight;
@@ -266,7 +272,7 @@ if (assistantSend) {
 
     try {
       const response = await sendAssistantMessage(aiProjectId, aiSessionId, message);
-      appendAssistantMessage('assistant', response.message || 'No response returned.');
+      appendAssistantMessage('assistant', response.reply || 'No response returned.');
       setAssistantStatus('AI assistant responded. Continue the conversation or generate a draft.', false);
     } catch (err) {
       setAssistantStatus(err?.message || 'AI assistant request failed.', true);

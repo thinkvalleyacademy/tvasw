@@ -1,0 +1,13 @@
+[Unit]
+Description=TVA-SW backend (Spring Boot)
+
+[Service]
+WorkingDirectory=%h/apps/tvasw
+EnvironmentFile=%h/apps/tvasw/backend.env
+ExecStart=/usr/bin/java -Xms64m -Xmx256m -jar %h/apps/tvasw/backend.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
