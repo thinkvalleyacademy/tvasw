@@ -155,6 +155,28 @@ class ApiTests {
     }
 
     @Test
+    void deleteAccountRemovesEverything() throws Exception {
+        when(gemini.generateJson(anyString(), anyMap())).thenReturn("{\"message\":\"Q?\",\"options\":[],\"progress\":10}");
+        String token = register("leaver@example.com");
+        String keeper = register("keeper@example.com");
+        long mine = project(token);
+        long theirs = project(keeper);
+        send(post("/api/ai/projects/" + mine + "/start"), token, null);
+        send(post("/api/ai/projects/" + theirs + "/start"), keeper, null);
+
+        assertEquals(401, send(post("/api/account/delete"), null, Map.of("password", "password1")).getStatus());
+        assertEquals(403, send(post("/api/account/delete"), token, Map.of("password", "wrong")).getStatus());
+        assertEquals(204, send(post("/api/account/delete"), token, Map.of("password", "password1")).getStatus());
+
+        assertEquals(401, send(post("/api/auth/login"), null, Map.of("email", "leaver@example.com", "password", "password1")).getStatus());
+        assertEquals(401, send(get("/api/ai/projects/" + mine), token, null).getStatus());
+        assertEquals(401, send(post("/api/ai/projects"), token, Map.of("name", "P", "description", "d")).getStatus());
+        assertEquals(1, tree(send(get("/api/ai/projects/" + theirs), keeper, null)).get("messages").size());
+        // The email can be registered again
+        register("leaver@example.com");
+    }
+
+    @Test
     void plainTextReplyStillWorks() throws Exception {
         when(gemini.generateJson(anyString(), anyMap())).thenReturn("not json");
         String token = register("plain@example.com");

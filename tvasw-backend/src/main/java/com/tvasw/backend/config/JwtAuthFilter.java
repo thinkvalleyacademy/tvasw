@@ -1,5 +1,6 @@
 package com.tvasw.backend.config;
 
+import com.tvasw.backend.repository.UserRepository;
 import com.tvasw.backend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,9 +17,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepo;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, UserRepository userRepo) {
         this.jwtService = jwtService;
+        this.userRepo = userRepo;
     }
 
     @Override
@@ -26,7 +29,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String header = req.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
-            jwtService.parseUserId(header.substring(7)).ifPresent(userId ->
+            // Tokens of deleted accounts stop working immediately
+            jwtService.parseUserId(header.substring(7)).filter(userRepo::existsById).ifPresent(userId ->
                 SecurityContextHolder.getContext().setAuthentication(
                     new UsernamePasswordAuthenticationToken(userId, null, List.of())));
         }

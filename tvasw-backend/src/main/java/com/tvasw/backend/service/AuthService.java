@@ -1,15 +1,20 @@
 package com.tvasw.backend.service;
 
 import com.tvasw.backend.dto.*;
+import com.tvasw.backend.model.Project;
 import com.tvasw.backend.model.User;
+import com.tvasw.backend.repository.ChatMessageRepository;
+import com.tvasw.backend.repository.ProjectRepository;
 import com.tvasw.backend.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -17,12 +22,17 @@ import java.util.Optional;
 public class AuthService {
 
     private final UserRepository userRepo;
+    private final ProjectRepository projectRepo;
+    private final ChatMessageRepository chatRepo;
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final String dummyHash;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder encoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepo, ProjectRepository projectRepo, ChatMessageRepository chatRepo,
+                       PasswordEncoder encoder, JwtService jwtService) {
         this.userRepo = userRepo;
+        this.projectRepo = projectRepo;
+        this.chatRepo = chatRepo;
         this.encoder = encoder;
         this.jwtService = jwtService;
         this.dummyHash = encoder.encode("unused");
@@ -55,6 +65,22 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect email or password");
         }
         return toResponse(user.get());
+    }
+
+    // Removes the account with all its projects, chats and documents (backups expire after 14 days)
+    @Transactional
+    public void deleteAccount(Long userId, String password) {
+        User user = userRepo.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please log in again"));
+        if (!encoder.matches(password, user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Incorrect password");
+        }
+        List<Project> projects = projectRepo.findByOwnerId(userId);
+        if (!projects.isEmpty()) {
+            chatRepo.deleteByProjectIdIn(projects.stream().map(Project::getId).toList());
+            projectRepo.deleteAll(projects);
+        }
+        userRepo.delete(user);
     }
 
     private AuthResponse toResponse(User user) {

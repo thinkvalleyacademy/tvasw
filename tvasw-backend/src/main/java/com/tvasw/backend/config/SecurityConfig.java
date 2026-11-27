@@ -1,5 +1,6 @@
 package com.tvasw.backend.config;
 
+import com.tvasw.backend.repository.UserRepository;
 import com.tvasw.backend.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService,
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService, UserRepository userRepo,
                                            @Value("${tvasw.app.admin-token:}") String adminToken) throws Exception {
         http
             .cors(Customizer.withDefaults())
@@ -36,7 +37,7 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .addFilterBefore(new AdminTokenFilter(adminToken), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthFilter(jwtService, userRepo), UsernamePasswordAuthenticationFilter.class)
             .httpBasic(basic -> basic.disable())
             .formLogin(form -> form.disable());
         return http.build();
