@@ -58,10 +58,27 @@
         </span>
       </div>
 
+      <section id="deleteAccountView" class="danger-zone" hidden>
+        <h3>Delete my account</h3>
+        <p>This permanently deletes your account and all your projects, chats and documents, including projects you have sent to Thinkvalley. Download any documents you want to keep first. This cannot be undone.</p>
+        <form id="deleteAccountForm">
+          <div class="form-group">
+            <label for="deletePassword">Enter your password to confirm</label>
+            <input type="password" id="deletePassword" maxlength="72" autocomplete="current-password" required>
+          </div>
+          <div class="client-links">
+            <button type="submit" class="btn btn-danger" id="deleteAccountSubmit">Delete my account permanently</button>
+            <a href="#projects" class="btn btn-outline">Cancel</a>
+          </div>
+          <p id="deleteAccountStatus" class="status-message"></p>
+        </form>
+      </section>
+
       <section id="projectsView" hidden>
         <h3>My projects</h3>
         <div id="projectList" class="project-list"></div>
         <p id="projectsStatus" class="status-message"></p>
+        <p class="account-actions"><a href="#delete-account">Delete my account</a></p>
       </section>
 
       <section id="newProjectView" hidden>

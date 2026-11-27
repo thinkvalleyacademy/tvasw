@@ -59,7 +59,7 @@ function projectPath(action = '') {
 // ---- Views ----
 
 function showView(name) {
-  ['authForm', 'projectsView', 'newProjectView', 'chatView'].forEach(id => { $(id).hidden = id !== name; });
+  ['authForm', 'projectsView', 'newProjectView', 'chatView', 'deleteAccountView'].forEach(id => { $(id).hidden = id !== name; });
 }
 
 async function route() {
@@ -71,7 +71,12 @@ async function route() {
 
   $('authUserEmail').textContent = auth.email;
   const match = location.hash.match(/^#project-(\d+)$/);
-  if (location.hash === '#new') {
+  if (location.hash === '#delete-account') {
+    current = null;
+    $('deletePassword').value = '';
+    setStatus('deleteAccountStatus', '');
+    showView('deleteAccountView');
+  } else if (location.hash === '#new') {
     current = null;
     showView('newProjectView');
   } else if (match) {
@@ -86,7 +91,7 @@ async function showProjects(view) {
   try {
     const projects = await apiFetch('/api/ai/projects');
     if (view !== viewId) return;
-    if (projects.length === 0) {
+    if (projects.length === 0 && location.hash !== '#projects') {
       location.replace('#new');
       return;
     }
@@ -95,7 +100,7 @@ async function showProjects(view) {
         <span><strong>${escapeHtml(p.name)}</strong><small>${new Date(p.createdAt).toLocaleDateString()} · ${p.progress}% complete</small></span>
         <span class="badge badge-${p.stage.toLowerCase()}">${STATUS_LABELS[p.stage] || escapeHtml(p.stage)}</span>
       </a>
-    `).join('');
+    `).join('') || '<p>No projects yet. <a href="#new">Start a new project</a>.</p>';
     setStatus('projectsStatus', '');
   } catch (err) {
     if (view !== viewId) return;
@@ -367,6 +372,35 @@ $('logoutBtn').addEventListener('click', () => {
   sessionStorage.removeItem('tvaswAuth');
   history.replaceState(null, '', location.pathname);
   location.reload(); // also clears forms and the open chat
+});
+
+$('deleteAccountForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!confirm('Delete your account and all your projects permanently?')) return;
+  const btn = $('deleteAccountSubmit');
+  btn.disabled = true;
+  setStatus('deleteAccountStatus', '');
+  try {
+    const auth = getAuth();
+    const resp = await fetch(`${API_BASE}/api/account/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth?.token}` },
+      body: JSON.stringify({ password: $('deletePassword').value })
+    });
+    if (!resp.ok) {
+      const body = await resp.json().catch(() => ({}));
+      throw new Error(resp.status === 401 ? 'Your login has expired. Please log in again.' : body.error || `Request failed (${resp.status})`);
+    }
+    sessionStorage.removeItem('tvaswAuth');
+    $('deletePassword').value = '';
+    history.replaceState(null, '', location.pathname);
+    route();
+    setStatus('authStatus', 'Your account and all its data have been deleted.');
+  } catch (err) {
+    setStatus('deleteAccountStatus', err.message, true);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 window.addEventListener('hashchange', route);

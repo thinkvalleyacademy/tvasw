@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     Optional<ChatMessage> findTopByProjectIdOrderByIdDesc(Long projectId);
+    void deleteByProjectIdIn(List<Long> projectIds);
     List<ChatMessage> findByProjectIdOrderById(Long projectId);
 }
