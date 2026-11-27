@@ -335,6 +335,7 @@ function setAuthMode(register) {
   });
   $('authSubmit').textContent = register ? 'Create account' : 'Log in';
   $('authNameGroup').hidden = !register;
+  $('authTermsNote').hidden = !register;
   $('authName').required = register;
   $('authPassword').autocomplete = register ? 'new-password' : 'current-password';
   $('authStatus').textContent = '';
