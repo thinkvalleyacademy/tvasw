@@ -10,6 +10,24 @@ const app = express(); // ✅ define FIRST
 // Set TRUST_PROXY=loopback when running behind a local reverse proxy
 if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
 
+// HTTPS only for public visitors (local requests have no X-Forwarded-Proto)
+app.use((req, res, next) => {
+  if (req.get('X-Forwarded-Proto') && !req.secure) {
+    const host = req.get('Host') || '';
+    if (!/^(www\.)?thinkvalleysoftwares\.in$/i.test(host)) return res.status(403).send('HTTPS required');
+    return res.redirect(308, `https://${host}${req.originalUrl}`);
+  }
+  if (req.secure) res.set('Strict-Transport-Security', 'max-age=2592000');
+  res.set({
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+  });
+  next();
+});
+
 // Simple per-IP limiter (in memory, reset on restart)
 function rateLimit(limit, periodMs, failuresOnly = false) {
   const hits = new Map();
